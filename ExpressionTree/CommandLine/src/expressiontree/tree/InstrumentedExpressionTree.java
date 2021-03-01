@@ -1,7 +1,7 @@
 package expressiontree.tree;
 
 import expressiontree.iterators.IteratorFactory;
-import expressiontree.nodes.ComponentNode;
+import expressiontree.composites.ComponentNode;
 import expressiontree.visitors.Visitor;
 
 import java.util.Iterator;
@@ -92,11 +92,11 @@ public class InstrumentedExpressionTree
      * Returns the designated iterator after requesting it from
      * factory method. 
      */
-    public Iterator<ExpressionTree> makeIterator(String traversalOrder) {
+    public Iterator<ExpressionTree> iterator(String traversalOrder) {
         System.out.println("starting iterator() call");
         Iterator<ExpressionTree> temp =
-            mTreeIteratorFactory.makeIterator(this,
-                                             traversalOrder);
+            mTreeIteratorFactory.iterator(this,
+                                          traversalOrder);
         System.out.println("finished iterator() call");
         return temp;
     }

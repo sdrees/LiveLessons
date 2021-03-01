@@ -1,6 +1,7 @@
 package expressiontree.interpreter.postorder;
 
 import expressiontree.interpreter.*;
+import expressiontree.interpreter.exprs.Expr;
 import expressiontree.tree.ExpressionTree;
 import expressiontree.tree.ExpressionTreeFactory;
 
@@ -75,7 +76,7 @@ public class PostOrderInterpreter
         // stack.pop().interpret();
 
         // Pop the top item off the stack, which should contain the
-        // complete expression tree.
+        // complete parse tree.
         return stack.pop();
     }
 

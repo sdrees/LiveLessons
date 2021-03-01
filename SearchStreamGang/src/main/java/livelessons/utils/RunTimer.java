@@ -10,7 +10,7 @@ public class RunTimer {
     /**
      * Keep track of which SearchStreamGang performed the best.
      */
-    private static Map<String, Long> mResultsMap = new HashMap<>();
+    private static final Map<String, Long> mResultsMap = new HashMap<>();
 
     /**
      * Keeps track of how long the test has run.
@@ -38,7 +38,7 @@ public class RunTimer {
     }
 
     /**
-     * Call @a supplier.get() and time how long it takes to run.
+     * Call {@code supplier.get()} and time how long it takes to run.
      *
      * @return The result returned by @a supplier.get()
      */
@@ -56,17 +56,17 @@ public class RunTimer {
     }
 
     /**
-     * Call @a runnable.run() and time how long it takes to run.
+     * Call {@code runnable.run()} and time how long it takes to run.
      */
     public static void timeRun(Runnable runnable,
-                                String testName) {
+                               String testName) {
         startTiming();
         runnable.run();
         stopTiming();
 
         // Store the execution times into the results map.
         mResultsMap.put(testName,
-                mExecutionTime);
+                        mExecutionTime);
     }
 
     /**
@@ -74,15 +74,14 @@ public class RunTimer {
      * ordered from fastest to slowest.
      */
     public static String getTimingResults() {
-        StringBuffer stringBuffer =
-            new StringBuffer();
+        StringBuilder stringBuilder =
+            new StringBuilder();
 
-        stringBuffer.append("\nPrinting ")
+        stringBuilder.append("\nPrinting ")
             .append(mResultsMap.entrySet().size())
             .append(" results from fastest to slowest\n");
 
-        // Print out the contents of the mResultsMap in sorted
-        // order.
+        // Print out the contents of the mResultsMap in sorted order.
         mResultsMap
             // Get the entrySet for the mResultsMap.
             .entrySet()
@@ -93,21 +92,24 @@ public class RunTimer {
             // Create a SimpleImmutableEntry containing the timing
             // results (value) followed by the test name (key).
             .map(entry
-                 -> new AbstractMap.SimpleImmutableEntry<>
-                 (entry.getValue(),
-                  entry.getKey()))
+                 -> new AbstractMap.SimpleImmutableEntry<>(entry.getValue(),
+                                                           entry.getKey()))
 
             // Sort the stream by the timing results (key).
-            .sorted(Comparator.comparing(AbstractMap.SimpleImmutableEntry::getKey))
+            .sorted(Map.Entry.comparingByKey())
 
             // Append the entries in the sorted stream.
-            .forEach(entry -> stringBuffer
-                     .append("")
-                     .append(entry.getValue())
-                     .append(" executed in ")
-                     .append(entry.getKey())
-                     .append(" msecs\n"));
+            .forEach(entry -> 
+                     // Create the desired output.
+                     stringBuilder
+                     // Right-justify the runtime.
+                     .append(String.format("%5d", entry.getKey()))
+                     .append(" msecs needed to run ")
+                     // Just get the last portion of the test name.
+                     .append(StringUtils.lastSegment(entry.getValue(), '.'))
+                     .append("\n"));
 
-        return stringBuffer.toString();
+        // Convert the result into a string.
+        return stringBuilder.toString();
     }
 }

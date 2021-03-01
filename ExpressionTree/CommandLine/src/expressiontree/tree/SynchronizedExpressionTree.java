@@ -1,7 +1,7 @@
 package expressiontree.tree;
 
 import expressiontree.iterators.IteratorFactory;
-import expressiontree.nodes.ComponentNode;
+import expressiontree.composites.ComponentNode;
 import expressiontree.visitors.Visitor;
 
 import java.util.Iterator;
@@ -97,11 +97,11 @@ public class SynchronizedExpressionTree
      * Returns the designated iterator after requesting it from
      * factory method.
      */
-    public Iterator<ExpressionTree> makeIterator(String traversalOrder) {
+    public Iterator<ExpressionTree> iterator(String traversalOrder) {
         Iterator<ExpressionTree> temp;
         synchronized(this) {
-            temp = mTreeIteratorFactory.makeIterator(this,
-                                                    traversalOrder);
+            temp = mTreeIteratorFactory.iterator(this,
+                                                 traversalOrder);
         }
         return temp;
     }

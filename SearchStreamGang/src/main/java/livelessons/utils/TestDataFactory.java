@@ -1,11 +1,8 @@
 package livelessons.utils;
 
-import livelessons.utils.SharedString;
-
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -13,7 +10,7 @@ import java.util.regex.Pattern;
 import static java.util.stream.Collectors.toList;
 
 /**
- * This utility class contains methods for obtaining test data.
+ * This utility class contains methods that obtain test data.
  */
 public class TestDataFactory {
     /**
@@ -23,8 +20,8 @@ public class TestDataFactory {
     }
 
     /**
-     * Return the input data in the given @a filename as a list of
-     * Strings.
+     * Return the input data in the given {@code filename} as a list
+     * of CharSequence objects.
      */
     public static List<CharSequence> getInput(String filename,
                                               String splitter) {
@@ -47,7 +44,7 @@ public class TestDataFactory {
                 // Filter out any empty strings.
                 .filter(((Predicate<String>) String::isEmpty).negate())
                 
-                // Collect the results into a string.
+                // Collect results into a list of strings.
                 .collect(toList());
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,8 +53,8 @@ public class TestDataFactory {
     }
 
     /**
-     * Return the input data in the given @a filename as a list of
-     * SharedStrings.
+     * Return the input data in the given {@code filename} as a list
+     * of character sequences.
      */
     public static List<CharSequence> getSharedInput(String filename,
                                                     String splitter) {
@@ -69,24 +66,26 @@ public class TestDataFactory {
             CharSequence bytes =
                 new String(Files.readAllBytes(Paths.get(uri)));
 
-            return
+            // Return a list of character sequences.
+            return Pattern
                 // Compile a regular expression that's used to split
                 // the file into a list of Strings.
-                Pattern.compile(splitter)
+                .compile(splitter)
 
-                // Creates a stream from the given input
-                // sequence around matches of this pattern.
+                // Creates a stream from the given input sequence
+                // around matches of this pattern.
                 .splitAsStream(bytes)
 
                 // Filter out any empty strings.
                 .filter(((Predicate<String>) String::isEmpty).negate())
 
-                // Map each String to a SharedString to
-                // eliminate copying overhead.
+                // Map each string to a SharedString to eliminate
+                // copying overhead.
                 .map(string -> 
                      new SharedString(string.toCharArray()))
 
-                // Collect the results into a string.
+                // Trigger intermediate operations and collect results
+                // into a list of char sequences.
                 .collect(toList());
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,19 +94,22 @@ public class TestDataFactory {
     }
 
     /**
-     * Return the phrase list in the @a filename as a list of
+     * Return the phrase list in the {@code filename} as a list of
      * non-empty strings.
      */
     public static List<String> getPhraseList(String filename) {
         try {
             return Files
-                // Read all lines from filename.
+                // Read all lines from filename and convert into a
+                // stream of strings.
                 .lines(Paths.get(ClassLoader.getSystemResource
-                                        (filename).toURI()))
+                                 (filename).toURI()))
+
                 // Filter out any empty strings.
                 .filter(((Predicate<String>) String::isEmpty).negate())
 
-                // Collect the results into a string.
+                // Trigger intermediate operations and collect the
+                // results into a list of strings.
                 .collect(toList());
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,10 +9,11 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
 
 /**
- * This program shows the difference between stream sources (such as
- * List) that enforce encounter order and stream sources (such as
- * HashSet) that do not in the context of various order-sensitive
- * aggregate operations, such as limit() and distinct().
+ * This program shows the difference between Java streams sources
+ * (such as List) that enforce encounter order and stream sources
+ * (such as HashSet) that do not in the context of various
+ * order-sensitive aggregate operations, such as limit() and
+ * distinct().
  */
 public class ex21 {
     /**
@@ -35,7 +36,7 @@ public class ex21 {
         // Create a List of random integers between the values 100 and
         // 200 (List enforces encounter order).
         List<Integer> list =
-            Arrays.asList(random.ints(sEncounterMax, 100, 200)
+            List.of(random.ints(sEncounterMax, 100, 200)
                           .boxed()
                           .toArray(Integer[]::new));
 

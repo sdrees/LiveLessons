@@ -1,20 +1,19 @@
 package folder;
 
-import utils.ExceptionUtils;
-
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 /**
- * Implements a custom collector that converts a stream of Path
+ * This custom collector recursively converts a stream of Path
  * objects into a single Folder object that forms the root of a
- * recursive directory structure.
+ * hierarchical directory structure.
  */
 public class FolderCollector
       implements Collector<Path,
@@ -23,63 +22,75 @@ public class FolderCollector
     /**
      * Indicates whether processing should occur in parallel.
      */
-    private boolean mParallel;
+    private final boolean mParallel;
+
+    /**
+     * Path for the folder.
+     */
+    private final Path mPath;
 
     /**
      * Constructor initializes the field.
      */
-    private FolderCollector(boolean parallel) {
+    private FolderCollector(boolean parallel,
+                            Path path) {
         mParallel = parallel;
+        mPath = path;
     }
 
     /**
-     * A function that creates and returns a new mutable result
-     * container that will hold all the documents and subfolders in
-     * the stream.
+     * This factory method returns a supplier that creates and returns
+     * a new mutable result container that holds all the documents and
+     * subfolders in the stream.
      *
-     * @return a function which returns a new, mutable result container
+     * @return a supplier that returns a new, mutable result container
      */
     @Override
     public Supplier<Folder> supplier() {
-        return Folder::new;
+        return () -> new Folder(mPath);
     }
     
     /**
-     * A function that folds a Path into the mutable result container.
+     * This factory method returns a biconsumer that adds a path to
+     * the mutable result container.
      *
-     * @return a function which folds a Path into a mutable result container
+     * @return a biconsumer that adds a path to the mutable result container
      */
     @Override
     public BiConsumer<Folder, Path> accumulator() {
-        return (Folder folder, Path entry) 
-            -> folder.addEntry(entry,
-                               mParallel);
+        // Return a biconsumer that adds a path to the mutable result
+        // container.
+
+        return (folder, entry) ->
+                // Add the entry to the folder.
+                folder.addEntry(entry, mParallel);
     }
 
     /**
-     * A function that accepts two partial results and merges them.
-     * The combiner function may fold state from one argument into the
-     * other and return that, or may return a new result container.
+     * This factory method merges the contents of two subfolders into
+     * a single folder.
      *
-     * @return a function which combines two partial results into a combined
-     * result
+     * @return a BinaryOperation that merges two subfolders
+     *         into a combined folder result
      */
     @Override
     public BinaryOperator<Folder> combiner() {
-        return Folder::addAll;
+        // Merge contents of two subfolders.
+        return Folder::merge;
     }
 
     /**
-     * Perform the final transformation from the intermediate
-     * accumulation type {@code A} to the final result type {@code
-     * R}.
+     * This factory method returns a function that performs the final
+     * transformation of the mutable result container type {@code
+     * Folder} to the final result type {@code Folder}.
      *
      * @return a function which transforms the intermediate result to
      * the final result
      */
     @Override
     public Function<Folder, Folder> finisher() {
-        return Function.identity();
+        // This is a no-op since IDENTITY_FINISH is set.
+        return null;
     }
 
     /**
@@ -90,19 +101,23 @@ public class FolderCollector
      * @return An immutable set of collector characteristics, which in
      * this case is UNORDERED and IDENTITY_FINISH.
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public Set characteristics() {
-        return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED,
-                                                      Collector.Characteristics.IDENTITY_FINISH));
+    public Set<Collector.Characteristics> characteristics() {
+        // Return an immutable set of collector characteristics, which
+        // in this case is UNORDERED and IDENTITY_FINISH.
+        return Collections
+            .unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED,
+                                        Characteristics.IDENTITY_FINISH));
     }
 
     /**
-     * This static factory method creates a new FolderCollector.
+     * This factory method creates a new {@code FolderCollector}.
      *
-     * @return A new FolderCollector
+     * @return A new {@code FolderCollector}
      */
-    public static Collector<Path, Folder, Folder>toFolder(boolean parallel) {
-        return new FolderCollector(parallel);
+    public static Collector<Path, Folder, Folder> toFolder(boolean parallel,
+                                                           Path path) {
+        // Return a new folder collector.
+        return new FolderCollector(parallel, path);
     }
 }

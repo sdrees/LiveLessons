@@ -20,12 +20,12 @@ public class ThreadJoinTest {
      * the words concurrently in multiple threads.
      */
     private final static String[] mOneShotInputStrings = {
-        "xreo", "xfao", "xmiomio", "xlao", "xtiotio", "xsoosoo", "xdoo", "xdoodoo"
+        "xreo", "xfao", "xmiomio", "xlao", "xtiotio", "xsoosoo", "xdoo", "xdoodoooo"
     };
 
     // List of words to search for.
     private static String[] mWordList = {
-        "do", "re", "mi", "fa", "so", "la", "ti", "do"
+        "do", "re", "mi", "fa", "so", "la", "ti", "do", "oo"
     };
         
     /**
@@ -57,12 +57,7 @@ public class ThreadJoinTest {
          * The array of words to find.
          */
         final String[] mWordsToFind;
-        
-        /**
-         * The List of worker Threads that were created.
-         */
-        private List<Thread> mWorkerThreads;
-        
+
         /**
          * Constructor initializes the fields and runs the program.
          */
@@ -74,7 +69,7 @@ public class ThreadJoinTest {
 
             // This List holds Threads so they can be joined when
             // their processing is done.
-            mWorkerThreads = new LinkedList<>();
+            List<Thread> workerThreads = new LinkedList<>();
 
             // Create and start a Thread for each element in the
             // mInput.
@@ -84,20 +79,21 @@ public class ThreadJoinTest {
                 Thread t = new Thread(makeTask(i));
                 
                 // Add to the List of Threads to join.
-                mWorkerThreads.add(t);               
+                workerThreads.add(t);
             }        
 
             // Start all threads to process input in the background.
-            for (Thread thread : mWorkerThreads)
+            for (Thread thread : workerThreads)
                 thread.start();
 
             // Barrier synchronization to wait for threads to finish.
-            for (Thread thread : mWorkerThreads)
+            for (Thread thread : workerThreads) {
                 try {
                     thread.join();
                 } catch (InterruptedException e) {
                     printDebugging("join() interrupted");
                 }
+            }
         }
 
         /**
@@ -132,7 +128,7 @@ public class ThreadJoinTest {
                 // appears in the input data.
                 for (int i = inputData.indexOf(word, 0);
                      i != -1;
-                     i = inputData.indexOf(word, i + word.length()))
+                     i = inputData.indexOf(word, i + 1))
                     // Each time a match is found the processResults()
                     // hook method is called to handle the results.
                     processResults("in thread " 
