@@ -1,6 +1,7 @@
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import utils.BigFractionUtils;
 
@@ -16,10 +17,10 @@ import java.util.function.Predicate;
 /**
  * This class shows how to apply Project Reactor features
  * asynchronously to perform various Flux operators, including
- * create(), interval(), map(), filter(), doOnNext(), take(),
- * subscribe(), then(), range(), subscribeOn(), publishOn(), and
- * various thread pools.  The Mono fromRunnable() operator is also
- * shown.
+ * create(), interval(), map(), filter(), doOnNext(), doFinally(),
+ * take(), subscribe(), then(), range(), subscribeOn(), publishOn(),
+ * and various thread pools.  The Mono fromRunnable() operator is
+ * also shown.
  */
 @SuppressWarnings("ALL")
 public class FluxEx {
@@ -39,16 +40,16 @@ public class FluxEx {
     private static final int sLOWER_BOUND = sMAX_VALUE - sMAX_ITERATIONS;
 
     /**
-     * Random number generator.
-     */
-    private static final Random sRANDOM = new Random();
-
-    /**
      * A memoizer cache that maps candidate primes to their smallest
      * factor (if they aren't prime) or 0 if they are prime.
      */ 
-    private static final Map<BigInteger, BigInteger> mPrimeCache
+    private static final Map<BigInteger, BigInteger> sPrimeCache
         = new ConcurrentHashMap<>();
+
+    /**
+     * Random number generator.
+     */
+    private static final Random sRANDOM = new Random();
 
     /**
      * 0.5 second duration for sleeping.
@@ -63,7 +64,7 @@ public class FluxEx {
         !bigInteger.mod(BigInteger.TWO).equals(BigInteger.ZERO);
 
     /**
-     * Generate a random BigInteger.
+     * Generate a random BigInteger (with the goal of generating duplicates).
      */
     private static Function<Long, BigInteger> sGenerateRandomBigInteger = __ ->
         BigInteger.valueOf(sLOWER_BOUND +
@@ -74,6 +75,7 @@ public class FluxEx {
      * are prime using an asynchronous time-driven Flux stream.
      */
     public static Mono<Void> testIsPrimeTimed() {
+        // We use a StringBuffer because it is thread-safe!
         StringBuffer sb =
             new StringBuffer(">> Calling testIsPrimeTimed()\n");
 
@@ -116,7 +118,7 @@ public class FluxEx {
         // FluxSink emits any number of next() signals followed by
         // zero or one onError()/onComplete().
         return (FluxSink<BigInteger> sink) -> Flux
-            // Generate a big integer stream periodically in a
+            // Generate a Long stream starting at 0 periodically in a
             // background thread.
             .interval(sSLEEP_DURATION)
 
@@ -152,6 +154,10 @@ public class FluxEx {
         Consumer<BigInteger> logBigInteger =
             s -> FluxEx.print(s, sb);
 
+        // Create a Scheduler containing one "subscriber" thread.
+        Scheduler subscriber = Schedulers
+            .newParallel("subscriber", 1);
+
         return Flux
             // Factory method creates a stream of random big integers
             // that are generated in a background "publisher" thread.
@@ -162,7 +168,7 @@ public class FluxEx {
 
             // Arrange to perform the prime-checking computations in
             // the "subscriber" thread.
-            .publishOn(Schedulers.newParallel("subscriber", 1))
+            .publishOn(subscriber)
 
             // Use a memoizer to check if each random big integer is
             // prime or not in the "subscriber" thread.
@@ -173,6 +179,9 @@ public class FluxEx {
             .doOnNext(bigInteger ->
                        FluxEx.processResult(bigInteger,
                                             sb))
+
+            // Dispose of the "subscriber" thread.
+            .doFinally(___ -> subscriber.dispose())
 
             // Display results after all elements in the flux stream are
             // processed and return an empty mono to synchronize with
@@ -187,6 +196,10 @@ public class FluxEx {
      * background thread.
      */
     private static Consumer<FluxSink<BigInteger>> makeAsyncFluxSink() {
+        // Create a Scheduler containing one "publisher" thread.
+        Scheduler publisher = Schedulers
+            .newParallel("publisher", 1);
+
         // FluxSink emits any number of next() signals followed by
         // zero or one onError()/onComplete().
         return (FluxSink<BigInteger> sink) -> Flux
@@ -198,7 +211,7 @@ public class FluxEx {
 
             // Arrange to emit the random big integers in the
             // "publisher" thread.
-            .subscribeOn(Schedulers.newParallel("publisher", 1))
+            .subscribeOn(publisher)
 
             // Generate random numbers between min and max values
             // to ensure some duplicates.
@@ -207,6 +220,9 @@ public class FluxEx {
             // Eliminate even numbers from consideration since they
             // aren't prime!
             .filter(sOnlyOdd)
+
+            // Dispose of the "publisher" thread.
+            .doFinally(___ -> publisher.dispose())
 
             // Start the processing and emit each random number until
             // complete or an error occurs.
@@ -231,7 +247,7 @@ public class FluxEx {
             (primeCandidate,
              // This atomic "check then act" method serves as
              // a "memoizer" cache.
-             mPrimeCache.computeIfAbsent(primeCandidate,
+             sPrimeCache.computeIfAbsent(primeCandidate,
                                          pc -> (FluxEx.isPrime(pc, sb))));
     }
 
@@ -242,7 +258,7 @@ public class FluxEx {
      */
     static BigInteger isPrime(BigInteger n,
                               StringBuffer sb) {
-        print("checking if " + n + " is prime",
+        print("explicitly checking if " + n + " is prime",
                 sb);
 
         // Even numbers can't be prime.
@@ -263,37 +279,14 @@ public class FluxEx {
      */
     private static void processResult(PrimeResult primeTuple,
                                       StringBuffer sb) {
-        if (!primeTuple.mSmallestFactor.equals(BigInteger.ZERO)) {
+        if (!primeTuple.smallestFactor().equals(BigInteger.ZERO)) {
             print("found a non-prime number with smallest factor "
-                  + primeTuple.mSmallestFactor
+                  + primeTuple.smallestFactor()
                   + " for "
-                  + primeTuple.mPrimeCandidate, sb);
+                  + primeTuple.primeCandidate(), sb);
         } else {
             print("found a prime number "
-                  + primeTuple.mPrimeCandidate, sb);
-        }
-    }
-
-    /**
-     * The result returned from checkIfPrime.
-     */
-    private static class PrimeResult {
-        /**
-         * Value that was evaluated for primality.
-         */
-        BigInteger mPrimeCandidate;
-
-        /**
-         * Result of the isPrime() method.
-         */
-        BigInteger mSmallestFactor;
-
-        /**
-         * Constructor initializes the fields.
-         */
-        public PrimeResult(BigInteger primeCandidate, BigInteger smallestFactor) {
-            mPrimeCandidate = primeCandidate;
-            mSmallestFactor = smallestFactor;
+                  + primeTuple.primeCandidate(), sb);
         }
     }
 

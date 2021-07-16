@@ -8,9 +8,13 @@ overview of what's included:
         framework, including flatMap(), collectList(), zipWith(),
         first(), when(), and onErrorResume().
   
-. ex2 - This example is currently just a placeholder for random things
-        I'm playing around with for Project Reactor.  It's likely to
-        change radically from time to time.
+. ex2 - This example demonstrates various reactive algorithms for
+        finding all the minimum values in an unordered list, which is
+        surprisingly not well documented in the literature.  These
+        three algorithms return a Flux that emits the cheapest
+        flight(s) from a Flux of available flights, which is part of
+        an Airline Booking App that we're creating for an upcoming
+        MOOC on Reactive Microservices.
 
 . ex3 - This program applies Project Reactor features to implement
         various types of backpressure strategies (e.g., ignore,

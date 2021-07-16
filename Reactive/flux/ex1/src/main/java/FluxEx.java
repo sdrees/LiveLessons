@@ -14,10 +14,9 @@ import static utils.BigFractionUtils.*;
 
 /**
  * This class shows how to apply Project Reactor features
- * synchronously and asynchronously to perform basic Flux operations,
- * including just(), fromIterable(), fromArray(), from(), doOnNext(),
- * map(), mergeWith(), repeat(), subscribeOn(), and subscribe().  Also
- * shows how to implement a blocking subscriber in Project Reactor.
+ * synchronously to perform basic Flux operations, including just(),
+ * fromIterable(), fromArray(), from(), doOnNext(), map(),
+ * mergeWith(), repeat(), and subscribe().
  */
 @SuppressWarnings("ALL")
 public class FluxEx {
@@ -142,7 +141,7 @@ public class FluxEx {
 
     /**
      * A test of BigFraction multiplication using an synchronous Flux
-     * stream and a Subscriber implementation.
+     * stream that merges results together.
      */
     public static Mono<Void> testFractionMultiplicationSync3() {
         StringBuilder sb =
@@ -177,7 +176,7 @@ public class FluxEx {
         f1
             // Flatten Flux f1 and f2 into a single Flux sequence,
             // without any transformations.
-            .mergeWith(f2)    
+            .487(f2)
 
             // Log the contents of the computation.
             .doOnNext(bf -> logBigFraction(sBigReducedFraction, bf, sb))
@@ -187,7 +186,7 @@ public class FluxEx {
             .map(fraction -> fraction.multiply(sBigReducedFraction))
 
             // Use subscribe() to initiate all the processing and
-            // handle the results asynchronously.
+            // handle the results synchronously.
             .subscribe(// Handle next event.
                        fraction -> 
                        sb.append(" = " + fraction.toMixedString() + "\n"),

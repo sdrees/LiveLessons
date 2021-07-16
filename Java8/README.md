@@ -84,8 +84,11 @@ Here's an overview of what's current included in these examples:
          limit()) in the context of parallel streams.
 
 . ex16 - This program implements various ways of computing factorials
-         to demonstrate the performance of alternative techniques and
-         the dangers of sharing unsynchronized state between threads.
+         for BigIntegers to demonstrate the performance of alternative
+         parallel and sequential algorithms, as well as the dangers of
+         sharing unsynchronized state between threads.  It illustrates
+         both Java sequential/parallel Streams and RxJava
+         sequential/parallel reactive streams.
 
 . ex17 - This example shows various issues associated with using the
          Java streams reduce() terminal operation, including the need
@@ -164,3 +167,16 @@ Here's an overview of what's current included in these examples:
 . ex32 - This example shows several techniques for concatenating a
          list of strings together multiple times via Java Streams and
          RxJava.
+
+. ex33 - This example shows examples of applying the ForkJoinPool
+         .ManagedBlocker interface, which are based on the code
+         fragments shown in the Java documentation at
+         https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.ManagedBlocker.html
+
+. ex34 - This example demonstrates various functional algorithms for
+         finding all the minimum values in an unordered list, which is
+         surprisingly not well documented in the programming
+         literature.  These three algorithms print the cheapest
+         flight(s) from a Stream of available flights, which is part
+         of an Flight Listing App (FLApp) that we're creating for an
+         upcoming online courses on Reactive Microservices.

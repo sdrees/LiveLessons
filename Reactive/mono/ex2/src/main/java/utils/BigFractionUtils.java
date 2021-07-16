@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
  * A utility class containing helpful methods for manipulating various
  * BigFraction features.
  */
+@SuppressWarnings("StringConcatenationInsideStringBufferAppend")
 public class BigFractionUtils {
     /**
      * A utility class should always define a private constructor.
@@ -26,7 +27,7 @@ public class BigFractionUtils {
      * Represents a test that's completed running when it returns.
      */
     public static final Mono<Void> sVoidM =
-            Mono.empty();
+        Mono.empty();
 
     /**
      * Display the {@code string} after prepending the thread id.
@@ -53,16 +54,16 @@ public class BigFractionUtils {
     }
 
     /**
-     * Convert {@code bigFraction} to a mixed string and display it
-     * and the contents of {@code stringBuffer}.
+     * Display {@code bigFraction} and the contents of {@code
+     * stringBuffer}.
      */
     public static void displayMixedBigFraction(String bigFraction,
                                                StringBuffer stringBuffer) {
         stringBuffer.append("     ["
-                + Thread.currentThread().getId()
-                + "] Mixed BigFraction result = "
-                + bigFraction
-                + "\n");
+                            + Thread.currentThread().getId()
+                            + "] Mixed BigFraction result = "
+                            + bigFraction
+                            + "\n");
         BigFractionUtils.display(stringBuffer.toString());
     }
 
@@ -73,7 +74,9 @@ public class BigFractionUtils {
     public static void logBigFraction(BigFraction unreducedFraction,
                                       BigFraction reducedFraction,
                                       StringBuffer sb) {
-        sb.append("     unreducedFraction "
+        sb.append("     ["
+                  + Thread.currentThread().getId()
+                  + "] unreducedFraction "
                   + unreducedFraction.toString()
                   + "\n     reduced improper fraction = "
                   + reducedFraction.toString()

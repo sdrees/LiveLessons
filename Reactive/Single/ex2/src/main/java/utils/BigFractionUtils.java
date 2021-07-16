@@ -25,7 +25,7 @@ public class BigFractionUtils {
     /**
      * Represents a test that's completed running when it returns.
      */
-    public static final Completable sVoidM =
+    public static final Completable sVoidS =
         Completable.complete();
 
     /**
@@ -36,5 +36,49 @@ public class BigFractionUtils {
                            + Thread.currentThread().getId()
                            + "] "
                            + string);
+    }
+
+    /**
+     * Convert {@code bigFraction} to a mixed string and display it and
+     * the contents of {@code stringBuffer}.
+     */
+    public static void displayMixedBigFraction(BigFraction bigFraction,
+                                               StringBuffer stringBuffer) {
+        stringBuffer.append("     ["
+                            + Thread.currentThread().getId()
+                            + "] Mixed BigFraction result = "
+                            + bigFraction.toMixedString()
+                            + "\n");
+        BigFractionUtils.display(stringBuffer.toString());
+    }
+
+    /**
+     * Convert {@code bigFraction} to a mixed string and display it
+     * and the contents of {@code stringBuffer}.
+     */
+    public static void displayMixedBigFraction(String bigFraction,
+                                               StringBuffer stringBuffer) {
+        stringBuffer.append("     ["
+                + Thread.currentThread().getId()
+                + "] Mixed BigFraction result = "
+                + bigFraction
+                + "\n");
+        BigFractionUtils.display(stringBuffer.toString());
+    }
+
+    /**
+     * Convert {@code bigFraction} to a mixed string and display it
+     * and the contents of {@code stringBuffer}.
+     */
+    public static void logBigFraction(BigFraction unreducedFraction,
+                                      BigFraction reducedFraction,
+                                      StringBuffer sb) {
+        sb.append("     ["
+                  + Thread.currentThread().getId()
+                  + "] unreducedFraction "
+                  + unreducedFraction.toString()
+                  + "\n     reduced improper fraction = "
+                  + reducedFraction.toString()
+                  + "\n     calling BigFraction::toMixedString\n");
     }
 }
